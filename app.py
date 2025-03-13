@@ -1,11 +1,22 @@
 import streamlit as st
-from langchain_openai import ChatOpenAI  # 修正
-from langchain_core.messages import HumanMessage, SystemMessage  # 修正
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
 from dotenv import load_dotenv
 import os
 
-# 環境変数の読み込み
+# ローカル開発用の環境変数読み込み
 load_dotenv()
+
+# OpenAI APIキーの取得（Streamlit Secretsまたはローカルの.envファイルから）
+if 'OPENAI_API_KEY' in st.secrets:
+    openai_api_key = st.secrets['OPENAI_API_KEY']
+else:
+    openai_api_key = os.getenv('OPENAI_API_KEY')
+
+# APIキーがない場合のエラーメッセージ
+if not openai_api_key:
+    st.error("OpenAI APIキーが設定されていません。.envファイルまたはStreamlit Cloudのシークレットを確認してください。")
+    st.stop()
 
 # タイトルとアプリの説明
 st.title("専門家AIアシスタント")
@@ -38,7 +49,8 @@ def get_ai_response(input_text, expert_type):
     # ChatOpenAIのインスタンスを作成
     chat = ChatOpenAI(
         model="gpt-3.5-turbo",
-        temperature=0.7
+        temperature=0.7,
+        openai_api_key=openai_api_key  # APIキーを明示的に渡す
     )
     
     # システムメッセージを設定（専門家の種類に応じて）
